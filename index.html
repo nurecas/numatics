@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numatics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-path-properties@1.1.1/dist/svg-path-properties.min.js"></script>
+    <style>
+        /* Custom styles for a clean layout and better UX */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            /* bg-gray-900 */
+            color: #f3f4f6;
+            /* text-gray-200 */
+        }
+
+        .control-panel {
+            background-color: #1f2937;
+            /* bg-gray-800 */
+            border-right: 1px solid #374151;
+            /* border-gray-700 */
+        }
+
+        .control-group {
+            border-bottom: 1px solid #374151;
+            /* border-gray-700 */
+            padding: 1rem;
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+            /* text-gray-300 */
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 0.5rem;
+            background-color: #374151;
+            /* bg-gray-700 */
+            border-radius: 9999px;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1rem;
+            height: 1rem;
+            background-color: #3b82f6;
+            /* bg-blue-500 */
+            border-radius: 9999px;
+        }
+
+        button,
+        .file-upload-label {
+            display: inline-block;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background-color: #3b82f6;
+            /* bg-blue-500 */
+            color: white;
+            border-radius: 0.375rem;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover,
+        .file-upload-label:hover {
+            background-color: #2563eb;
+            /* bg-blue-600 */
+        }
+
+        .btn-secondary {
+            background-color: #4b5563;
+            /* bg-gray-600 */
+        }
+
+        .btn-secondary:hover {
+            background-color: #6b7280;
+            /* bg-gray-500 */
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+
+        .radio-group input[type="radio"]:checked+span {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .radio-group span {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            background-color: #374151;
+            width: 100%;
+            text-align: center;
+        }
+
+        #canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        canvas {
+            border-radius: 0.5rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+    </style>
+</head>
+
+<body class="flex flex-col md:flex-row h-screen overflow-hidden">
+
+    <div class="control-panel w-full md:w-72 flex-shrink-0 overflow-y-auto">
+        <div class="p-4 text-center border-b border-gray-700">
+            <h1 class="text-xl font-bold text-white">Numatics</h1>
+            <p class="text-xs text-gray-400">Click canvas to create a wave</p>
+        </div>
+
+        <div class="control-group">
+            <label>Preset Shapes</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button class="svg-load-button btn-secondary" data-svg-path="SVG/none.svg">None</button>
+                <button class="svg-load-button btn-secondary" data-svg-path="SVG/human.svg">Human</button>
+                <button class="svg-load-button btn-secondary" data-svg-path="SVG/infinity.svg">Infinity</button>
+                <button class="svg-load-button btn-secondary" data-svg-path="SVG/clover.svg">Clover</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="svgFile">Import Custom SVG</label>
+            <input type="file" id="svgFile" class="hidden" accept=".svg">
+            <label for="svgFile" class="file-upload-label">Select SVG File</label>
+        </div>
+
+        <div class="control-group">
+            <label for="sidesSlider">Outer Boundary: <span id="sidesValue">6</span></label>
+            <input type="range" id="sidesSlider" min="3" max="13" value="6">
+        </div>
+
+        <div class="control-group">
+            <label>Wave Pulse Type</label>
+            <div class="radio-group flex space-x-2">
+                <label>
+                    <input type="radio" name="pulseType" value="single" checked>
+                    <span>Single</span>
+                </label>
+                <label>
+                    <input type="radio" name="pulseType" value="repeating">
+                    <span>Repeating</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="control-group" id="wavelength-control" style="display: none;">
+            <label for="wavelengthSlider">Wavelength: <span id="wavelengthValue">50</span></label>
+            <input type="range" id="wavelengthSlider" min="10" max="200" value="50">
+        </div>
+
+        <div class="control-group">
+            <label for="densitySlider">Wave Density: <span id="densityValue">360</span></label>
+            <input type="range" id="densitySlider" min="60" max="1024" value="360" step="10">
+        </div>
+
+        <div class="control-group">
+            <label for="svgScaleSlider">SVG Scale: <span id="svgScaleValue">0.8</span></label>
+            <input type="range" id="svgScaleSlider" min="0.1" max="1.5" value="0.8" step="0.05">
+        </div>
+
+        <div class="control-group grid grid-cols-2 gap-2">
+            <button id="centerPulseButton">Center Pulse</button>
+            <button id="clearButton" class="btn-secondary">Clear All</button>
+        </div>
+    </div>
+
+    <main id="canvas-container">
+    </main>
+
+    <script>
+        const sketch = (p) => {
+            // --- State Variables ---
+            let waves = [];
+            let outerBoundary = [];
+            let svgBoundaries = [];
+            let numSides = 6;
+            // The 'boundaryType' variable defaults to 'reflect' as the UI for 'wrap' is removed.
+            let boundaryType = 'reflect';
+            let pulseType = 'single';
+            let wavelength = 50;
+            let rayCount = 360;
+            let svgScale = 0.8;
+            const PADDING = 100;
+
+            let outerBoundaryRadius;
+            let outerBoundaryCenter;
+            let isCircleBoundary = false;
+
+            let rawSvgData = {
+                segments: [],
+                minX: Infinity,
+                minY: Infinity,
+                maxX: -Infinity,
+                maxY: -Infinity
+            };
+
+            p.setup = () => {
+                const container = document.getElementById('canvas-container');
+                const canvas = p.createCanvas(container.clientWidth, container.clientHeight);
+                canvas.parent(container);
+                p.angleMode(p.DEGREES);
+                updateOuterBoundary();
+                setupUIListeners();
+            };
+
+            p.draw = () => {
+                p.background(17, 24, 39);
+                drawBoundary(outerBoundary, p.color(59, 130, 246, 150), 2);
+                drawBoundary(svgBoundaries, p.color(236, 72, 153, 200), 2);
+                waves.forEach(wave => wave.updateAndDraw());
+            };
+
+            p.mousePressed = () => {
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    waves.push(new Wave(p.mouseX, p.mouseY));
+                }
+            };
+
+            p.windowResized = () => {
+                const container = document.getElementById('canvas-container');
+                p.resizeCanvas(container.clientWidth, container.clientHeight);
+                updateOuterBoundary();
+                rescaleAndCenterSVG();
+            };
+
+            function setupUIListeners() {
+                const sidesSlider = document.getElementById('sidesSlider');
+                const sidesValueSpan = document.getElementById('sidesValue');
+                sidesSlider.addEventListener('input', (e) => {
+                    numSides = parseInt(e.target.value);
+                    sidesValueSpan.textContent = numSides > 12 ? 'Circle' : numSides;
+                    updateOuterBoundary();
+                });
+
+                document.getElementById('svgFile').addEventListener('change', handleSVGUpload);
+
+                // --- MODIFIED: Add listeners for the new preset SVG buttons ---
+                document.querySelectorAll('.svg-load-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const path = e.target.dataset.svgPath;
+                        loadSVGFromPath(path);
+                    });
+                });
+
+                // --- REMOVED: Listener for the old boundaryType radio buttons is gone. ---
+
+                const wavelengthControl = document.getElementById('wavelength-control');
+                document.querySelectorAll('input[name="pulseType"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        pulseType = e.target.value;
+                        wavelengthControl.style.display = pulseType === 'repeating' ? 'block' : 'none';
+                    });
+                });
+
+                document.getElementById('wavelengthSlider').addEventListener('input', (e) => {
+                    wavelength = parseInt(e.target.value);
+                    document.getElementById('wavelengthValue').textContent = wavelength;
+                });
+                document.getElementById('densitySlider').addEventListener('input', (e) => {
+                    rayCount = parseInt(e.target.value);
+                    document.getElementById('densityValue').textContent = rayCount;
+                });
+                document.getElementById('svgScaleSlider').addEventListener('input', (e) => {
+                    svgScale = parseFloat(e.target.value);
+                    document.getElementById('svgScaleValue').textContent = svgScale.toFixed(2);
+                    rescaleAndCenterSVG();
+                });
+                document.getElementById('centerPulseButton').addEventListener('click', () => {
+                    waves.push(new Wave(p.width / 2, p.height / 2));
+                });
+                document.getElementById('clearButton').addEventListener('click', () => {
+                    waves = [];
+                    svgBoundaries = [];
+                    // Reset raw SVG data as well
+                    rawSvgData = {
+                        segments: [],
+                        minX: Infinity,
+                        minY: Infinity,
+                        maxX: -Infinity,
+                        maxY: -Infinity
+                    };
+                });
+            }
+
+            function updateOuterBoundary() {
+                outerBoundary = [];
+                outerBoundaryCenter = p.createVector(p.width / 2, p.height / 2);
+                outerBoundaryRadius = p.min(p.width, p.height) / 2 - 20;
+                isCircleBoundary = (numSides > 12);
+
+                const sidesForDrawing = isCircleBoundary ? 100 : numSides;
+                const angleOffset = isCircleBoundary ? 0 : 180 / numSides;
+
+                for (let i = 0; i < sidesForDrawing; i++) {
+                    const angle1 = (i / sidesForDrawing) * 360 + angleOffset;
+                    const angle2 = ((i + 1) / sidesForDrawing) * 360 + angleOffset;
+                    const v1 = p5.Vector.fromAngle(p.radians(angle1), outerBoundaryRadius).add(outerBoundaryCenter);
+                    const v2 = p5.Vector.fromAngle(p.radians(angle2), outerBoundaryRadius).add(outerBoundaryCenter);
+                    outerBoundary.push({
+                        a: v1,
+                        b: v2
+                    });
+                }
+            }
+
+            function drawBoundary(boundary, color, weight) {
+                p.stroke(color);
+                p.strokeWeight(weight);
+                p.noFill();
+                for (const segment of boundary) {
+                    p.line(segment.a.x, segment.a.y, segment.b.x, segment.b.y);
+                }
+            }
+
+            // --- NEW: Function to load SVG from a path ---
+            function loadSVGFromPath(path) {
+                // Special case for the 'none' button to clear the SVG
+                if (path.endsWith('none.svg')) {
+                    svgBoundaries = [];
+                    rawSvgData = {
+                        segments: [],
+                        minX: Infinity,
+                        minY: Infinity,
+                        maxX: -Infinity,
+                        maxY: -Infinity
+                    };
+                    return;
+                }
+
+                fetch(path)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(svgText => {
+                        parseSVG(svgText);
+                    })
+                    .catch(e => {
+                        console.error('Error loading or parsing SVG:', e);
+                        alert(`Could not load SVG from: ${path}. Make sure the file exists and the path is correct.`);
+                    });
+            }
+
+            function handleSVGUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => parseSVG(e.target.result);
+                reader.readAsText(file);
+            }
+
+            function rescaleAndCenterSVG() {
+                if (rawSvgData.segments.length === 0) return;
+                svgBoundaries = [];
+                const {
+                    segments,
+                    minX,
+                    minY,
+                    maxX,
+                    maxY
+                } = rawSvgData;
+                const svgWidth = maxX - minX;
+                const svgHeight = maxY - minY;
+                const canvasInnerWidth = p.width - PADDING * 2;
+                const canvasInnerHeight = p.height - PADDING * 2;
+                const baseScale = Math.min(canvasInnerWidth / svgWidth, canvasInnerHeight / svgHeight);
+                const finalScale = baseScale * svgScale;
+                const offsetX = (p.width / 2) - (svgWidth * finalScale / 2) - (minX * finalScale);
+                const offsetY = (p.height / 2) - (svgHeight * finalScale / 2) - (minY * finalScale);
+
+                for (const seg of segments) {
+                    const v1 = p.createVector(seg.start.x * finalScale + offsetX, seg.start.y * finalScale + offsetY);
+                    const v2 = p.createVector(seg.end.x * finalScale + offsetX, seg.end.y * finalScale + offsetY);
+                    svgBoundaries.push({
+                        a: v1,
+                        b: v2
+                    });
+                }
+            }
+
+            function parseSVG(svgText) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, "image/svg+xml");
+                rawSvgData = {
+                    segments: [],
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                };
+
+                const addSegment = (x1, y1, x2, y2) => {
+                    if (x1 === x2 && y1 === y2) return;
+                    rawSvgData.segments.push({
+                        start: {
+                            x: x1,
+                            y: y1
+                        },
+                        end: {
+                            x: x2,
+                            y: y2
+                        }
+                    });
+                    rawSvgData.minX = Math.min(rawSvgData.minX, x1, x2);
+                    rawSvgData.minY = Math.min(rawSvgData.minY, y1, y2);
+                    rawSvgData.maxX = Math.max(rawSvgData.maxX, x1, x2);
+                    rawSvgData.maxY = Math.max(rawSvgData.maxY, y1, y2);
+                };
+
+                doc.querySelectorAll('path').forEach(path => {
+                    const d = path.getAttribute('d');
+                    if (!d) return;
+                    const properties = svgPathProperties.svgPathProperties(d);
+                    const totalLength = properties.getTotalLength();
+                    if (totalLength === 0) return;
+                    const resolution = 200;
+                    const step = totalLength / resolution;
+                    let lastPoint = properties.getPointAtLength(0);
+                    for (let i = step; i <= totalLength + 0.001; i += step) {
+                        const point = properties.getPointAtLength(Math.min(i, totalLength));
+                        addSegment(lastPoint.x, lastPoint.y, point.x, point.y);
+                        lastPoint = point;
+                    }
+                });
+                rescaleAndCenterSVG();
+            }
+
+            class Wave {
+                constructor(x, y) {
+                    this.origin = p.createVector(x, y);
+                    this.rays = [];
+                    this.pulseTimer = 0;
+                    this.spawnPulse();
+                }
+                spawnPulse() {
+                    for (let i = 0; i < rayCount; i++) {
+                        this.rays.push(new Ray(this.origin, i * (360 / rayCount)));
+                    }
+                }
+                updateAndDraw() {
+                    if (pulseType === 'repeating' && ++this.pulseTimer >= wavelength) {
+                        this.spawnPulse();
+                        this.pulseTimer = 0;
+                    }
+                    this.rays.forEach(ray => {
+                        ray.update();
+                        ray.draw();
+                    });
+                }
+            }
+
+            class Ray {
+                constructor(origin, angle) {
+                    this.pos = origin.copy();
+                    this.vel = p5.Vector.fromAngle(p.radians(angle), 2);
+                    this.color = p.color(255, 255, 0, 200);
+                }
+
+                update() {
+                    const nextPos = p5.Vector.add(this.pos, this.vel);
+                    let closestHit = null;
+                    let closestDist = Infinity;
+                    let boundaryHit = null;
+                    let isOuterHit = false;
+
+                    const allBoundaries = [...svgBoundaries, ...outerBoundary];
+                    for (const segment of allBoundaries) {
+                        const hit = this.lineLineIntersection(this.pos, nextPos, segment.a, segment.b);
+                        if (hit) {
+                            const dist = this.pos.dist(hit);
+                            if (dist < closestDist) {
+                                closestDist = dist;
+                                closestHit = hit;
+                                boundaryHit = segment;
+                                isOuterHit = outerBoundary.includes(segment);
+                            }
+                        }
+                    }
+
+                    if (isCircleBoundary) {
+                        const distToNext = outerBoundaryCenter.dist(nextPos);
+                        if (distToNext >= outerBoundaryRadius) {
+                            const hit = this.lineCircleIntersection(this.pos, nextPos, outerBoundaryCenter, outerBoundaryRadius);
+                            if (hit) {
+                                const dist = this.pos.dist(hit);
+                                if (dist < closestDist) {
+                                    closestDist = dist;
+                                    closestHit = hit;
+                                    isOuterHit = true;
+                                    boundaryHit = null; // Clear segment for circle hit
+                                }
+                            }
+                        }
+                    }
+
+                    if (closestHit) {
+                        this.handleCollision(closestHit, boundaryHit, isOuterHit, closestDist);
+                    } else {
+                        this.pos.add(this.vel);
+                    }
+                }
+
+                handleCollision(hitPoint, segment, isOuter, distance) {
+                    const speed = this.vel.mag();
+                    const remainingDist = speed - distance;
+                    this.pos.set(hitPoint);
+
+                    if (isOuter && boundaryType === 'wrap') {
+                        // CORRECTED: Wrap Logic
+                        const vecFromCenter = p5.Vector.sub(this.pos, outerBoundaryCenter);
+                        // Teleport to the opposite side and nudge slightly inward
+                        this.pos.set(p5.Vector.sub(outerBoundaryCenter, vecFromCenter.setMag(outerBoundaryRadius - 0.1)));
+                    } else {
+                        // CORRECTED: Reflection Logic
+                        let normal;
+                        if (isOuter && isCircleBoundary) {
+                            normal = p5.Vector.sub(this.pos, outerBoundaryCenter).normalize();
+                        } else {
+                            const wall = p5.Vector.sub(segment.b, segment.a);
+                            normal = p.createVector(-wall.y, wall.x).normalize();
+                        }
+                        this.vel.reflect(normal);
+                    }
+
+                    if (remainingDist > 0) {
+                        this.pos.add(this.vel.copy().setMag(remainingDist));
+                    }
+                }
+
+                draw() {
+                    p.stroke(this.color);
+                    p.strokeWeight(2);
+                    p.point(this.pos.x, this.pos.y);
+                }
+
+                lineLineIntersection(p1, p2, p3, p4) {
+                    const d = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+                    if (d === 0) return null;
+                    const t = ((p1.x - p3.x) * (p3.y - p4.y) - (p1.y - p3.y) * (p3.x - p4.x)) / d;
+                    const u = -((p1.x - p2.x) * (p1.y - p3.y) - (p1.y - p2.y) * (p1.x - p3.x)) / d;
+                    if (t > 0.001 && t < 1 && u > 0 && u < 1) { // Added small epsilon to t
+                        return p.createVector(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y));
+                    }
+                    return null;
+                }
+
+                lineCircleIntersection(p1, p2, circleCenter, radius) {
+                    const d = p5.Vector.sub(p2, p1);
+                    const f = p5.Vector.sub(p1, circleCenter);
+                    const a = d.dot(d);
+                    const b = 2 * f.dot(d);
+                    const c = f.dot(f) - radius * radius;
+                    let discriminant = b * b - 4 * a * c;
+                    if (discriminant < 0) return null;
+
+                    discriminant = Math.sqrt(discriminant);
+                    const t = (-b - discriminant) / (2 * a);
+
+                    if (t >= 0 && t <= 1) {
+                        // CORRECTED: Used .copy() to avoid modifying the original vector
+                        return p5.Vector.add(p1, d.copy().mult(t));
+                    }
+                    return null;
+                }
+            }
+        };
+        new p5(sketch);
+
+    </script>
+</body>
+
+</html>
