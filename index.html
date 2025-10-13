@@ -37,6 +37,43 @@
             color: #f3f4f6;
         }
 
+        /* Start by hiding the modal */
+        #simple-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Dark semi-transparent background */
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            /* Centers it vertically */
+            padding: 20px;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 400px;
+            /* Keeps it reasonably sized */
+            text-align: center;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
         .control-panel {
             background-color: #1f2937;
             border-right: 1px solid #374151;
@@ -137,7 +174,13 @@
 </head>
 
 <body class="flex flex-col md:flex-row h-screen overflow-hidden">
-
+    <div id="simple-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Best Viewed on Desktop.</h3>
+            <p>For the full experience, please use a desktop or laptop computer.</p>
+        </div>
+    </div>
     <div class="control-panel w-full md:w-80 flex-shrink-0 overflow-y-auto">
         <div class="p-4 text-center border-b border-gray-700">
             <img src="images/logo.png" style="width:25%;margin: auto">
@@ -210,7 +253,35 @@
     <main id="canvas-container">
     </main>
 
+
     <script>
+        // 1. Get the elements
+        const modal = document.getElementById('simple-modal');
+        const abt = document.querySelector('.aboutSection');
+        const closeBtn = document.querySelector('.close-btn');
+
+        // 2. Define the mobile breakpoint (768px is common for tablets/mobile)
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+        // 3. Show the modal if the screen is small
+        if (isMobile) {
+            modal.style.display = 'block';
+            abt.style.display = 'none';
+        }
+
+        // 4. Close the modal when the 'X' is clicked
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // 5. Close the modal if the user clicks the dark background
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+
         const sketch = (p) => {
             // --- Simulation State Variables ---
             let value, velocity, velocityBuffer; // OPTIMIZED: Added velocityBuffer for swapping
