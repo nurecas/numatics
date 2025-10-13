@@ -176,12 +176,24 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
+        #logo {
+            width: 25%;
+            margin: auto;
+        }
+
         @media (max-width: 768px) {
             #canvas-container {
-                flex-grow: 2;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                height: 50vh;
+            }
+
+            .control-panel {
+                height: 50vh;
+                padding: 30px;
+                padding-top: 0px;
+            }
+
+            #logo {
+                width: 10%;
             }
         }
 
@@ -200,7 +212,7 @@
     </div>
     <div class="control-panel w-full md:w-80 flex-shrink-0 overflow-y-auto">
         <div class="p-4 text-center border-b border-gray-700">
-            <img src="images/logo.png" style="width:25%;margin: auto">
+            <img id="logo" src="images/logo.png">
             <h1 class="text-xl font-bold text-white">Numatics</h1>
             <p class="text-xs text-gray-400">Wave interactions with shapes and forms</p>
         </div>
