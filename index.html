@@ -88,7 +88,7 @@
 
         .aboutSection {
             position: absolute;
-            right: 10px;
+            left: 10px;
             bottom: 10px;
             padding: 20px;
             background-color: #1f2937;
@@ -147,6 +147,15 @@
             background-color: #2563eb;
         }
 
+        .btn-primary {
+            background-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+
         .btn-secondary {
             background-color: #4b5563;
         }
@@ -160,7 +169,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
         }
 
         canvas {
@@ -168,10 +176,21 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
+        @media (max-width: 768px) {
+            #canvas-container {
+                flex-grow: 2;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
     </style>
 </head>
 
-<body class="flex flex-col md:flex-row h-screen overflow-hidden">
+<body class="flex flex-col md:flex-row h-screen">
+    <main id="canvas-container">
+    </main>
     <div id="simple-modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -185,7 +204,7 @@
             <h1 class="text-xl font-bold text-white">Numatics</h1>
             <p class="text-xs text-gray-400">Wave interactions with shapes and forms</p>
         </div>
-
+        <!--insert here-->
         <div class="control-group">
             <label>Preset Shape Boundaries (SVG)</label>
             <div class="grid grid-cols-2 gap-2">
@@ -223,8 +242,8 @@
         </div>
 
         <div class="control-group">
-            <label for="svgScaleSlider">SVG Scale: <span id="svgScaleValue">0.8</span></label>
-            <input type="range" id="svgScaleSlider" min="0.1" max="1.5" value="0.8" step="0.05">
+            <label for="svgScaleSlider">SVG Scale: <span id="svgScaleValue">0.4</span></label>
+            <input type="range" id="svgScaleSlider" min="0.1" max="1.5" value="0.4" step="0.05">
         </div>
 
         <div class="control-group">
@@ -238,7 +257,7 @@
         </div>
 
         <div class="control-group grid grid-cols-2 gap-2">
-            <button id="centerPulseButton">Center Pulse</button>
+            <button id="centerPulseButton" class="btn-primary">Center Pulse</button>
             <button id="clearButton" class="btn-secondary">Clear All</button>
         </div>
         <div class="aboutSection">
@@ -247,9 +266,6 @@
             <p>Share feedback: <a href="https://nurecas.com/Contact">Contact page</a></p>
         </div>
     </div>
-
-    <main id="canvas-container">
-    </main>
 
 
     <script>
@@ -292,7 +308,7 @@
             // --- Boundary State Variables ---
             let outerBoundaryVertices = [];
             let numSides = 6;
-            let svgScale = 0.8;
+            let svgScale = 0.4;
             let rawSvgSegments = [];
             let scaledSvgSegments = [];
             let svgMask, boundaryMask; // OPTIMIZED: Added boundaryMask
