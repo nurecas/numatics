@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9X1ZY32STV"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -17,7 +16,6 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no">
-
     <title>Numatics</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <meta property="og:image" content="/images/featured.jpg">
@@ -32,10 +30,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/svg-path-properties@1.1.1/dist/svg-path-properties.min.js"></script>
     <style>
+        /* CSS variables for centralized color theming */
+        :root {
+            --bg: #111827;
+            --panel-bg: #1f2937;
+            --text: #f3f4f6;
+            --text-muted: #d1d5db;
+            --primary: #3b82f6;
+            --secondary: #4b5563;
+            --accent: #ec4899;
+            --slider-track: #374151;
+        }
+
         body {
             font-family: "League Spartan", sans-serif;
-            background-color: #111827;
-            color: #f3f4f6;
+            background-color: var(--bg);
+            color: var(--text);
         }
 
         /* Start by hiding the modal */
@@ -52,7 +62,7 @@
         }
 
         .modal-content {
-            background-color: #1f2937;
+            background-color: var(--panel-bg);
             margin: 20% auto;
             padding: 20px;
             border-radius: 5px;
@@ -70,11 +80,11 @@
         }
 
         .close-btn:hover {
-            color: #000;
+            color: var(--text);
         }
 
         .control-panel {
-            background-color: #1f2937;
+            background-color: var(--panel-bg);
             border-right: 1px solid #374151;
         }
 
@@ -92,13 +102,13 @@
             left: 10px;
             bottom: 10px;
             padding: 20px;
-            background-color: #1f2937;
+            background-color: var(--panel-bg);
             color: #aaa;
             font-size: 10px;
         }
 
         a:link {
-            color: aqua;
+            color: var(--accent);
             background-color: transparent;
             text-decoration: none;
         }
@@ -107,7 +117,7 @@
             display: block;
             font-weight: 500;
             margin-bottom: 0.5rem;
-            color: #d1d5db;
+            color: var(--text-muted);
         }
 
         input[type="range"] {
@@ -115,7 +125,7 @@
             -webkit-appearance: none;
             appearance: none;
             height: 0.5rem;
-            background-color: #374151;
+            background-color: var(--slider-track);
             border-radius: 9999px;
             cursor: pointer;
         }
@@ -125,7 +135,7 @@
             appearance: none;
             width: 1rem;
             height: 1rem;
-            background-color: #3b82f6;
+            background-color: var(--primary);
             border-radius: 9999px;
         }
 
@@ -134,36 +144,53 @@
             display: inline-block;
             width: 100%;
             padding: 0.6rem 1rem;
-            background-color: #3b82f6;
+            background-color: var(--primary);
             color: white;
             border-radius: 0.375rem;
             text-align: center;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: filter 0.2s;
         }
 
         button:hover,
         .file-upload-label:hover {
-            background-color: #2563eb;
+            filter: brightness(0.85);
         }
 
         .btn-primary {
-            background-color: #3b82f6;
+            background-color: var(--primary);
         }
 
         .btn-primary:hover {
-            background-color: #2563eb;
+            filter: brightness(0.85);
         }
 
 
         .btn-secondary {
-            background-color: #4b5563;
+            background-color: var(--secondary);
         }
 
         .btn-secondary:hover {
-            background-color: #6b7280;
+            filter: brightness(1.2);
         }
+
+        /* Style for the new palette selector */
+        select {
+            width: 100%;
+            padding: 0.6rem;
+            background-color: var(--slider-track);
+            color: var(--text);
+            border: 1px solid var(--secondary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
 
         #canvas-container {
             flex-grow: 1;
@@ -208,7 +235,8 @@
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <p style="font-size: 20px;font-weight: 700">Best Viewed on Desktop</p>
-            <p style="font-size: 14px;font-weight: 200">For the best experience, please use a desktop or laptop computer.</p>
+            <p style="font-size: 14px;font-weight: 200">For the best experience, please use a desktop or laptop computer.
+            </p>
         </div>
     </div>
     <div class="control-panel w-full md:w-80 flex-shrink-0 overflow-y-auto">
@@ -217,7 +245,7 @@
             <h1 class="text-xl font-bold text-white">Numatics</h1>
             <p class="text-xs text-gray-400">Wave interactions with shapes and forms</p>
         </div>
-        <!--insert here-->
+
         <div class="control-group">
             <label>Preset Shape Boundaries (SVG)</label>
             <div class="grid grid-cols-2 gap-2">
@@ -272,6 +300,11 @@
         <div class="control-group grid grid-cols-2 gap-2">
             <button id="centerPulseButton" class="btn-primary">Center Pulse</button>
             <button id="clearButton" class="btn-secondary">Clear All</button>
+        </div>
+        <div class="control-group">
+            <label for="paletteSelector">Color Palette</label>
+            <select id="paletteSelector">
+            </select>
         </div>
         <div class="aboutSection">
             <p>An Open-Source project by <a href="https://nurecas.com/AbouT-Me">Fabin Rasheed</a></p>
@@ -329,6 +362,10 @@
 
             let canvasWidth, canvasHeight;
 
+            // --- Color Palette State ---
+            let colorPalettes = [];
+            let currentPalette;
+
             // --- UI Element Cache ---
             // OPTIMIZED: Caching DOM elements for faster access
             const ui = {};
@@ -342,7 +379,12 @@
                 p.pixelDensity(1);
 
                 initializeGrids();
+
+                initializeColorPalettes();
+                currentPalette = colorPalettes[0]; // Set default
+
                 cacheUIElements(); // OPTIMIZED: Cache elements once
+                applyPalette(); // Apply default palette
                 setupUIListeners();
                 updateOuterBoundary(); // This will now also update the boundaryMask
                 updateDisplay();
@@ -356,6 +398,159 @@
                 drawBoundaryOutline();
                 drawSvgOutline();
             };
+
+            function initializeColorPalettes() {
+                colorPalettes = [{
+                        name: "Numatics Blue",
+                        css: {
+                            '--bg': "#111827",
+                            '--panel-bg': "#1f2937",
+                            '--text': "#f3f4f6",
+                            '--text-muted': "#d1d5db",
+                            '--primary': "#3b82f6",
+                            '--secondary': "#4b5563",
+                            '--accent': "#ec4899",
+                            '--slider-track': "#374151"
+                        },
+                        p5: {
+                            bg: [17, 24, 39],
+                            boundary: [59, 130, 246, 150],
+                            svg: [236, 72, 153, 200],
+                            crest_mix: [1.0, 1.0, 0.5],
+                            trough_mix: [0.2, 0.6, 1.0]
+                        }
+                    },
+                    {
+                        name: "Solar Flare",
+                        css: {
+                            '--bg': "#200000",
+                            '--panel-bg': "#400000",
+                            '--text': "#ffe5e5",
+                            '--text-muted': "#ffc0c0",
+                            '--primary': "#ff4500",
+                            '--secondary': "#8b0000",
+                            '--accent': "#00ff00",
+                            '--slider-track': "#600000"
+                        },
+                        p5: {
+                            bg: [32, 0, 0],
+                            boundary: [255, 69, 0, 150],
+                            svg: [0, 255, 0, 200],
+                            crest_mix: [1.0, 0.8, 0.0],
+                            trough_mix: [0.8, 0.0, 0.0]
+                        }
+                    },
+                    {
+                        name: "Deep Sea",
+                        css: {
+                            '--bg': "#031a2c",
+                            '--panel-bg': "#0a2f4d",
+                            '--text': "#e0f7ff",
+                            '--text-muted': "#b3ecff",
+                            '--primary': "#00e5ff",
+                            '--secondary': "#008c9e",
+                            '--accent': "#f0ff00",
+                            '--slider-track': "#07416d"
+                        },
+                        p5: {
+                            bg: [3, 26, 44],
+                            boundary: [0, 229, 255, 150],
+                            svg: [240, 255, 0, 200],
+                            crest_mix: [0.0, 1.0, 0.5],
+                            trough_mix: [0.5, 0.0, 1.0]
+                        }
+                    },
+                    {
+                        name: "Monochrome",
+                        css: {
+                            '--bg': "#111111",
+                            '--panel-bg': "#222222",
+                            '--text': "#eeeeee",
+                            '--text-muted': "#cccccc",
+                            '--primary': "#007acc",
+                            '--secondary': "#555555",
+                            '--accent': "#ffffff",
+                            '--slider-track': "#444444"
+                        },
+                        p5: {
+                            bg: [17, 17, 17],
+                            boundary: [0, 122, 204, 150],
+                            svg: [255, 255, 255, 200],
+                            crest_mix: [1.0, 1.0, 1.0],
+                            trough_mix: [0.5, 0.5, 0.5]
+                        }
+                    },
+                    {
+                        name: "Forest Mist",
+                        css: {
+                            '--bg': "#0a1a0f",
+                            '--panel-bg': "#1a3a2a",
+                            '--text': "#e6f5e9",
+                            '--text-muted': "#c0e0c8",
+                            '--primary': "#4ade80",
+                            '--secondary': "#166534",
+                            '--accent': "#7dd3fc",
+                            '--slider-track': "#14532d"
+                        },
+                        p5: {
+                            bg: [10, 26, 15],
+                            boundary: [74, 222, 128, 150],
+                            svg: [125, 211, 252, 200],
+                            crest_mix: [0.5, 1.0, 0.5],
+                            trough_mix: [0.2, 0.5, 1.0]
+                        }
+                    },
+                    {
+                        name: "Synthwave",
+                        css: {
+                            '--bg': "#1a0b2e",
+                            '--panel-bg': "#2e1a47",
+                            '--text': "#f5e6ff",
+                            '--text-muted': "#e0c0ff",
+                            '--primary': "#f472b6",
+                            '--secondary': "#86198f",
+                            '--accent': "#2dd4bf",
+                            '--slider-track': "#4a2c6d"
+                        },
+                        p5: {
+                            bg: [26, 11, 46],
+                            boundary: [244, 114, 182, 150],
+                            svg: [45, 212, 191, 200],
+                            crest_mix: [1.0, 0.5, 1.0],
+                            trough_mix: [0.5, 0.2, 1.0]
+                        }
+                    },
+                    {
+                        name: "Golden Hour",
+                        css: {
+                            '--bg': "#2a1a00",
+                            '--panel-bg': "#4a3a1f",
+                            '--text': "#fffbeb",
+                            '--text-muted': "#fef3c7",
+                            '--primary': "#facc15",
+                            '--secondary': "#9a3412",
+                            '--accent': "#a5f3fc",
+                            '--slider-track': "#78350f"
+                        },
+                        p5: {
+                            bg: [42, 26, 0],
+                            boundary: [250, 204, 21, 150],
+                            svg: [165, 243, 252, 200],
+                            crest_mix: [1.0, 0.8, 0.2],
+                            trough_mix: [0.8, 0.2, 0.0]
+                        }
+                    }
+                ];
+            }
+
+            function applyPalette() {
+                const cssProps = currentPalette.css;
+                for (const prop in cssProps) {
+                    document.documentElement.style.setProperty(prop, cssProps[prop]);
+                }
+                // p5 colors are read directly from currentPalette in draw loops
+            }
+
 
             function initializeGrids() {
                 value = [];
@@ -399,6 +594,7 @@
 
             // OPTIMIZED: Function to cache all UI elements
             function cacheUIElements() {
+                ui.paletteSelector = document.getElementById('paletteSelector');
                 ui.sidesSlider = document.getElementById('sidesSlider');
                 ui.sidesValue = document.getElementById('sidesValue');
                 ui.svgFile = document.getElementById('svgFile');
@@ -417,9 +613,22 @@
                 ui.centerPulseButton = document.getElementById('centerPulseButton');
                 ui.clearButton = document.getElementById('clearButton');
                 ui.svgLoadButtons = document.querySelectorAll('.svg-load-button');
+
+                // Populate the palette selector
+                colorPalettes.forEach(palette => {
+                    const option = document.createElement('option');
+                    option.value = palette.name;
+                    option.textContent = palette.name;
+                    ui.paletteSelector.appendChild(option);
+                });
             }
 
             function setupUIListeners() {
+                ui.paletteSelector.addEventListener('change', (e) => {
+                    const selectedName = e.target.value;
+                    currentPalette = colorPalettes.find(p => p.name === selectedName);
+                    applyPalette();
+                });
                 ui.sidesSlider.addEventListener('input', (e) => {
                     numSides = parseInt(e.target.value);
                     ui.sidesValue.textContent = numSides > 12 ? 'Circle' : numSides;
@@ -504,7 +713,7 @@
             }
 
             function drawBoundaryOutline() {
-                p.stroke(59, 130, 246, 150);
+                p.stroke(...currentPalette.p5.boundary);
                 p.strokeWeight(2);
                 p.noFill();
                 p.beginShape();
@@ -516,7 +725,7 @@
 
             function drawSvgOutline() {
                 if (scaledSvgSegments.length === 0) return;
-                p.stroke(236, 72, 153, 200);
+                p.stroke(...currentPalette.p5.svg);
                 p.strokeWeight(2);
                 p.noFill();
                 for (const seg of scaledSvgSegments) {
@@ -578,32 +787,38 @@
                 p.loadPixels();
                 const colorIntensity = 2.5;
 
+                // Get colors from the active palette
+                const [baseR, baseG, baseB] = currentPalette.p5.bg;
+                const [crestR, crestG, crestB] = currentPalette.p5.crest_mix;
+                const [troughR, troughG, troughB] = currentPalette.p5.trough_mix;
+
+
                 for (let y = 0; y < canvasHeight; y++) {
                     for (let x = 0; x < canvasWidth; x++) {
                         const idx = 4 * (y * canvasWidth + x);
 
                         // OPTIMIZED: Fast mask check
                         if (boundaryMask[y][x] === 1 || svgMask[y][x] === 1) {
-                            p.pixels[idx] = 17;
-                            p.pixels[idx + 1] = 24;
-                            p.pixels[idx + 2] = 39;
+                            p.pixels[idx] = baseR;
+                            p.pixels[idx + 1] = baseG;
+                            p.pixels[idx + 2] = baseB;
                             p.pixels[idx + 3] = 255;
                             continue;
                         }
 
                         const v = value[y][x];
-                        let r = 17,
-                            g = 24,
-                            b = 39;
+                        let r = baseR,
+                            g = baseG,
+                            b = baseB;
 
                         if (v > 0) {
-                            r = p.min(255, 17 + v * colorIntensity);
-                            g = p.min(255, 24 + v * colorIntensity);
-                            b = p.min(255, 39 + v * colorIntensity * 0.5);
+                            r = p.min(255, baseR + v * colorIntensity * crestR);
+                            g = p.min(255, baseG + v * colorIntensity * crestG);
+                            b = p.min(255, baseB + v * colorIntensity * crestB);
                         } else {
-                            b = p.min(255, 39 - v * colorIntensity);
-                            g = p.min(255, 24 - v * colorIntensity * 0.6);
-                            r = p.min(255, 17 - v * colorIntensity * 0.2);
+                            r = p.min(255, baseR - v * colorIntensity * troughR);
+                            g = p.min(255, baseG - v * colorIntensity * troughG);
+                            b = p.min(255, baseB - v * colorIntensity * troughB);
                         }
 
                         p.pixels[idx] = r;
@@ -622,7 +837,8 @@
                     return;
                 }
                 fetch(path)
-                    .then(response => response.ok ? response.text() : Promise.reject(`HTTP error! status: ${response.status}`))
+                    .then(response => response.ok ? response.text() : Promise.reject(
+                        `HTTP error! status: ${response.status}`))
                     .then(parseSVG)
                     .catch(e => console.error('Error loading SVG:', e));
             }
