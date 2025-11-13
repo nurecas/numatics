@@ -286,6 +286,10 @@
             <label for="svgScaleSlider">SVG Scale: <span id="svgScaleValue">0.4</span></label>
             <input type="range" id="svgScaleSlider" min="0.1" max="1.5" value="0.4" step="0.05">
         </div>
+        <div class="control-group">
+                        <label for="svgAlphaSlider">SVG Opacity: <span id="svgAlphaValue">200</span></label>
+                        <input type="range" id="svgAlphaSlider" min="0" max="255" value="200" step="1">
+                    </div>
 
         <div class="control-group">
             <label for="nudgeSlider">Nudge Amount: <span id="nudgeValue">250</span></label>
@@ -358,6 +362,7 @@
             let rawSvgSegments = [];
             let scaledSvgSegments = [];
             let svgMask, boundaryMask; // OPTIMIZED: Added boundaryMask
+            let svgAlpha = 200; // <<< --- ADD THIS LINE
             const PADDING = 100;
 
             let canvasWidth, canvasHeight;
@@ -606,6 +611,8 @@
                 ui.speedValue = document.getElementById('speedValue');
                 ui.svgScaleSlider = document.getElementById('svgScaleSlider');
                 ui.svgScaleValue = document.getElementById('svgScaleValue');
+                ui.svgAlphaSlider = document.getElementById('svgAlphaSlider');
+                ui.svgAlphaValue = document.getElementById('svgAlphaValue');
                 ui.nudgeSlider = document.getElementById('nudgeSlider');
                 ui.nudgeValue = document.getElementById('nudgeValue');
                 ui.nudgeRadiusSlider = document.getElementById('nudgeRadiusSlider');
@@ -613,6 +620,8 @@
                 ui.centerPulseButton = document.getElementById('centerPulseButton');
                 ui.clearButton = document.getElementById('clearButton');
                 ui.svgLoadButtons = document.querySelectorAll('.svg-load-button');
+                ui.svgScaleSlider = document.getElementById('svgScaleSlider');
+                ui.svgScaleValue = document.getElementById('svgScaleValue');
 
                 // Populate the palette selector
                 colorPalettes.forEach(palette => {
@@ -654,6 +663,10 @@
                     svgScale = parseFloat(e.target.value);
                     ui.svgScaleValue.textContent = svgScale.toFixed(2);
                     generateSvgMask();
+                });
+                ui.svgAlphaSlider.addEventListener('input', (e) => {
+                    svgAlpha = parseInt(e.target.value);
+                    ui.svgAlphaValue.textContent = svgAlpha;
                 });
                 ui.nudgeSlider.addEventListener('input', e => {
                     nudgeAmount = parseInt(e.target.value);
@@ -725,7 +738,9 @@
 
             function drawSvgOutline() {
                 if (scaledSvgSegments.length === 0) return;
-                p.stroke(...currentPalette.p5.svg);
+                const [r, g, b] = currentPalette.p5.svg;
+                p.stroke(r, g, b, svgAlpha); // <-- Uses the new variable
+
                 p.strokeWeight(2);
                 p.noFill();
                 for (const seg of scaledSvgSegments) {
@@ -760,7 +775,18 @@
                         if (boundaryMask[y][x] === 1 || svgMask[y][x] === 1) {
                             continue;
                         }
-                        const laplacian = (value[y + 1][x] + value[y - 1][x] + value[y][x + 1] + value[y][x - 1]) - 4 * value[y][x];
+
+                        // --- MODIFICATION START ---
+                        // Check neighbors. If a neighbor is a wall, use our *own* value
+                        // to simulate a perfect reflection (Neumann boundary).
+                        const v_up = (boundaryMask[y - 1][x] === 1 || svgMask[y - 1][x] === 1) ? value[y][x] : value[y - 1][x];
+                        const v_down = (boundaryMask[y + 1][x] === 1 || svgMask[y + 1][x] === 1) ? value[y][x] : value[y + 1][x];
+                        const v_left = (boundaryMask[y][x - 1] === 1 || svgMask[y][x - 1] === 1) ? value[y][x] : value[y][x - 1];
+                        const v_right = (boundaryMask[y][x + 1] === 1 || svgMask[y][x + 1] === 1) ? value[y][x] : value[y][x + 1];
+
+                        const laplacian = (v_up + v_down + v_left + v_right) - 4 * value[y][x];
+                        // --- MODIFICATION END ---
+
                         velocityBuffer[y][x] = (velocity[y][x] + laplacian * feedbackStrength) * damping;
                     }
                 }
