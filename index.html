@@ -860,31 +860,63 @@
                     maxX = -Infinity,
                     maxY = -Infinity;
 
+                // --- START: Elegant & Precise Fix ---
+
+                // These constants control the resolution and performance of SVG parsing.
+                // MAX_STEPS_PER_PART caps computation to prevent browser freezes ("crashes").
+                // DEFAULT_STEP_LENGTH defines the target detail level for smaller paths.
+                const MAX_STEPS_PER_PART = 500;
+                const DEFAULT_STEP_LENGTH = 2; // (in SVG units)
+
                 doc.querySelectorAll('path').forEach(path => {
                     const d = path.getAttribute('d');
                     if (!d) return;
                     try {
                         const properties = svgPathProperties.svgPathProperties(d);
-                        const totalLength = properties.getTotalLength();
-                        if (totalLength === 0) return;
-                        const step = totalLength / Math.max(200, totalLength / 2);
-                        let lastPoint = properties.getPointAtLength(0);
-                        for (let i = step; i <= totalLength + 0.001; i += step) {
-                            const point = properties.getPointAtLength(Math.min(i, totalLength));
-                            rawSvgSegments.push({
-                                start: lastPoint,
-                                end: point
-                            });
-                            minX = Math.min(minX, lastPoint.x, point.x);
-                            minY = Math.min(minY, lastPoint.y, point.y);
-                            maxX = Math.max(maxX, lastPoint.x, point.x);
-                            maxY = Math.max(maxY, lastPoint.y, point.y);
-                            lastPoint = point;
-                        }
+                        const parts = properties.getParts();
+
+                        parts.forEach(part => {
+                            const totalLength = part.length;
+                            if (totalLength <= 0) return; // Skip zero-length parts
+
+                            // Calculate the number of steps:
+                            // 1. Aim for segments of DEFAULT_STEP_LENGTH
+                            let numSteps = Math.ceil(totalLength / DEFAULT_STEP_LENGTH);
+
+                            // 2. But don't exceed MAX_STEPS_PER_PART
+                            numSteps = Math.min(numSteps, MAX_STEPS_PER_PART);
+
+                            // 3. And always do at least 1 step
+                            numSteps = Math.max(numSteps, 1);
+
+                            const step = totalLength / numSteps;
+
+                            let lastPoint = part.getPointAtLength(0);
+
+                            // A precise integer-based loop is cleaner than a float-based one
+                            for (let i = 1; i <= numSteps; i++) {
+                                const currentLength = Math.min(i * step, totalLength);
+                                const point = part.getPointAtLength(currentLength);
+
+                                rawSvgSegments.push({
+                                    start: lastPoint,
+                                    end: point
+                                });
+
+                                // Update bounds
+                                minX = Math.min(minX, lastPoint.x, point.x);
+                                minY = Math.min(minY, lastPoint.y, point.y);
+                                maxX = Math.max(maxX, lastPoint.x, point.x);
+                                maxY = Math.max(maxY, lastPoint.y, point.y);
+
+                                lastPoint = point;
+                            }
+                        });
                     } catch (e) {
                         console.error("Could not parse SVG path:", d, e);
                     }
                 });
+                // --- END: Elegant & Precise Fix ---
 
                 rawSvgSegments.bounds = {
                     minX,
